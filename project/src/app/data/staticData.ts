@@ -154,3 +154,139 @@ export function getReportMachineRows(multiplier: number) {
     oee: m.oee,
   }));
 }
+
+// ─── Per-machine shift detail (Dashboard + Machine Detail) ───────────────────
+
+export interface MachineShiftData {
+  kpi: { performance: number; quality: number; availability: number; oee: number };
+  production: { time: string; production: number; scrap: number }[];
+  downtimeTop3: { reason: string; duration: number; color: string }[];
+  downtimeBreakdown: { reason: string; duration: number }[];
+  shift: { target: number; actual: number; accepted: number; rejected: number };
+}
+
+const DOWNTIME_COLORS = ['#ef4444', '#f97316', '#eab308', '#6366f1', '#10b981'];
+
+export const MACHINE_SHIFT_DATA: Record<string, MachineShiftData> = {
+  'Machine 1': {
+    kpi: { performance: 93.5, quality: 95.2, availability: 97.8, oee: 87.2 },
+    production: [
+      { time: '06:00', production: 38, scrap: 2 }, { time: '07:00', production: 45, scrap: 1 },
+      { time: '08:00', production: 52, scrap: 3 }, { time: '09:00', production: 61, scrap: 2 },
+      { time: '10:00', production: 58, scrap: 4 }, { time: '11:00', production: 72, scrap: 2 },
+      { time: '12:00', production: 65, scrap: 3 }, { time: '13:00', production: 78, scrap: 1 },
+      { time: '14:00', production: 82, scrap: 5 },
+    ],
+    downtimeTop3: [
+      { reason: 'Tool Wear', duration: 20, color: DOWNTIME_COLORS[0] },
+      { reason: 'Changeover', duration: 15, color: DOWNTIME_COLORS[1] },
+      { reason: 'Quality Issue', duration: 10, color: DOWNTIME_COLORS[2] },
+    ],
+    downtimeBreakdown: [
+      { reason: 'Tool Wear', duration: 20 },
+      { reason: 'Changeover', duration: 15 },
+      { reason: 'Quality Issue', duration: 10 },
+    ],
+    shift: { target: 800, actual: 551, accepted: 522, rejected: 29 },
+  },
+  'Machine 2': {
+    kpi: { performance: 90.2, quality: 96.2, availability: 94.8, oee: 82.5 },
+    production: [
+      { time: '06:00', production: 42, scrap: 1 }, { time: '07:00', production: 50, scrap: 2 },
+      { time: '08:00', production: 55, scrap: 1 }, { time: '09:00', production: 63, scrap: 3 },
+      { time: '10:00', production: 70, scrap: 2 }, { time: '11:00', production: 68, scrap: 1 },
+      { time: '12:00', production: 74, scrap: 2 }, { time: '13:00', production: 80, scrap: 2 },
+      { time: '14:00', production: 77, scrap: 3 },
+    ],
+    downtimeTop3: [
+      { reason: 'Machine Breakdown', duration: 40, color: DOWNTIME_COLORS[0] },
+      { reason: 'Material Shortage', duration: 25, color: DOWNTIME_COLORS[1] },
+      { reason: 'Quality Check', duration: 18, color: DOWNTIME_COLORS[2] },
+    ],
+    downtimeBreakdown: [
+      { reason: 'Machine Breakdown', duration: 40 },
+      { reason: 'Material Shortage', duration: 25 },
+      { reason: 'Quality Check', duration: 18 },
+    ],
+    shift: { target: 750, actual: 579, accepted: 557, rejected: 22 },
+  },
+  'Machine 3': {
+    kpi: { performance: 78.4, quality: 88.5, availability: 86.2, oee: 71.3 },
+    production: [
+      { time: '06:00', production: 30, scrap: 3 }, { time: '07:00', production: 35, scrap: 4 },
+      { time: '08:00', production: 28, scrap: 5 }, { time: '09:00', production: 40, scrap: 3 },
+      { time: '10:00', production: 45, scrap: 4 }, { time: '11:00', production: 38, scrap: 6 },
+      { time: '12:00', production: 42, scrap: 3 }, { time: '13:00', production: 50, scrap: 4 },
+      { time: '14:00', production: 44, scrap: 5 },
+    ],
+    downtimeTop3: [
+      { reason: 'Over Temperature', duration: 30, color: DOWNTIME_COLORS[0] },
+      { reason: 'Door Open', duration: 12, color: DOWNTIME_COLORS[1] },
+      { reason: 'Maintenance', duration: 8, color: DOWNTIME_COLORS[2] },
+    ],
+    downtimeBreakdown: [
+      { reason: 'Over Temperature', duration: 30 },
+      { reason: 'Door Open', duration: 12 },
+      { reason: 'Maintenance', duration: 8 },
+    ],
+    shift: { target: 700, actual: 352, accepted: 311, rejected: 41 },
+  },
+  'Machine 4': {
+    kpi: { performance: 55.8, quality: 79.4, availability: 68.5, oee: 45.8 },
+    production: [
+      { time: '06:00', production: 20, scrap: 5 }, { time: '07:00', production: 15, scrap: 7 },
+      { time: '08:00', production: 0, scrap: 0 }, { time: '09:00', production: 22, scrap: 6 },
+      { time: '10:00', production: 18, scrap: 8 }, { time: '11:00', production: 0, scrap: 0 },
+      { time: '12:00', production: 25, scrap: 5 }, { time: '13:00', production: 30, scrap: 4 },
+      { time: '14:00', production: 12, scrap: 9 },
+    ],
+    downtimeTop3: [
+      { reason: 'Servo Fault', duration: 55, color: DOWNTIME_COLORS[0] },
+      { reason: 'Electrical Fault', duration: 22, color: DOWNTIME_COLORS[1] },
+      { reason: 'Waiting Technician', duration: 15, color: DOWNTIME_COLORS[2] },
+    ],
+    downtimeBreakdown: [
+      { reason: 'Servo Fault', duration: 55 },
+      { reason: 'Electrical Fault', duration: 22 },
+      { reason: 'Waiting Technician', duration: 15 },
+    ],
+    shift: { target: 600, actual: 142, accepted: 113, rejected: 29 },
+  },
+  'Machine 5': {
+    kpi: { performance: 96.3, quality: 97.8, availability: 97.1, oee: 91.4 },
+    production: [
+      { time: '06:00', production: 60, scrap: 1 }, { time: '07:00', production: 68, scrap: 1 },
+      { time: '08:00', production: 72, scrap: 2 }, { time: '09:00', production: 75, scrap: 1 },
+      { time: '10:00', production: 80, scrap: 2 }, { time: '11:00', production: 85, scrap: 1 },
+      { time: '12:00', production: 82, scrap: 1 }, { time: '13:00', production: 88, scrap: 2 },
+      { time: '14:00', production: 91, scrap: 1 },
+    ],
+    downtimeTop3: [
+      { reason: 'Changeover', duration: 18, color: DOWNTIME_COLORS[0] },
+      { reason: 'Coolant Low', duration: 12, color: DOWNTIME_COLORS[1] },
+      { reason: 'Tool Change', duration: 8, color: DOWNTIME_COLORS[2] },
+    ],
+    downtimeBreakdown: [
+      { reason: 'Changeover', duration: 18 },
+      { reason: 'Coolant Low', duration: 12 },
+      { reason: 'Tool Change', duration: 8 },
+    ],
+    shift: { target: 900, actual: 701, accepted: 687, rejected: 14 },
+  },
+};
+
+export function getMachineShiftData(name: string): MachineShiftData {
+  return MACHINE_SHIFT_DATA[name] ?? MACHINE_SHIFT_DATA['Machine 1'];
+}
+
+export function getMachineShiftDataById(id: number): MachineShiftData {
+  const machine = STATIC_MACHINES.find(m => m.machine_id === id);
+  return getMachineShiftData(machine?.name ?? 'Machine 1');
+}
+
+export function formatDowntimeDuration(mins: number): string {
+  if (mins < 60) return `${mins} min`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  return m > 0 ? `${h}h ${m}m` : `${h}h`;
+}

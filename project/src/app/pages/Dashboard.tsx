@@ -3,7 +3,7 @@ import { Activity, Package, TrendingUp, Clock, Zap, CheckCircle, AlertCircle, Ta
 import { Card } from '../components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from '../components/ui/badge';
-import { STATIC_MACHINES, ACTIVE_SHIFT } from '../data/staticData';
+import { STATIC_MACHINES, ACTIVE_SHIFT, getMachineShiftData, formatDowntimeDuration } from '../data/staticData';
 
 // ─── Static Data ───────────────────────────────────────────────────────────────
 
@@ -14,94 +14,6 @@ const machines = STATIC_MACHINES.map(m => ({
   production: m.production,
   oee: m.oee,
 }));
-
-const machineData: Record<string, {
-  kpi: { performance: number; quality: number; availability: number; oee: number };
-  production: { time: string; production: number; scrap: number }[];
-  downtime: { reason: string; duration: number; color: string }[];
-  shift: { target: number; actual: number; accepted: number; rejected: number };
-}> = {
-  'Machine 1': {
-    kpi: { performance: 92.1, quality: 94.7, availability: 89.3, oee: 75.6 },
-    production: [
-      { time: '06:00', production: 38, scrap: 2 }, { time: '07:00', production: 45, scrap: 1 },
-      { time: '08:00', production: 52, scrap: 3 }, { time: '09:00', production: 61, scrap: 2 },
-      { time: '10:00', production: 58, scrap: 4 }, { time: '11:00', production: 72, scrap: 2 },
-      { time: '12:00', production: 65, scrap: 3 }, { time: '13:00', production: 78, scrap: 1 },
-      { time: '14:00', production: 82, scrap: 5 },
-    ],
-    downtime: [
-      { reason: 'Material Shortage', duration: 145, color: '#ef4444' },
-      { reason: 'Machine Breakdown', duration: 98, color: '#f97316' },
-      { reason: 'Changeover', duration: 67, color: '#eab308' },
-    ],
-    shift: { target: 800, actual: 551, accepted: 522, rejected: 29 },
-  },
-  'Machine 2': {
-    kpi: { performance: 88.4, quality: 96.2, availability: 91.0, oee: 82.5 },
-    production: [
-      { time: '06:00', production: 42, scrap: 1 }, { time: '07:00', production: 50, scrap: 2 },
-      { time: '08:00', production: 55, scrap: 1 }, { time: '09:00', production: 63, scrap: 3 },
-      { time: '10:00', production: 70, scrap: 2 }, { time: '11:00', production: 68, scrap: 1 },
-      { time: '12:00', production: 74, scrap: 2 }, { time: '13:00', production: 80, scrap: 2 },
-      { time: '14:00', production: 77, scrap: 3 },
-    ],
-    downtime: [
-      { reason: 'Changeover', duration: 110, color: '#ef4444' },
-      { reason: 'Quality Check', duration: 75, color: '#f97316' },
-      { reason: 'Operator Break', duration: 40, color: '#eab308' },
-    ],
-    shift: { target: 750, actual: 579, accepted: 557, rejected: 22 },
-  },
-  'Machine 3': {
-    kpi: { performance: 74.2, quality: 88.5, availability: 76.1, oee: 71.3 },
-    production: [
-      { time: '06:00', production: 30, scrap: 3 }, { time: '07:00', production: 35, scrap: 4 },
-      { time: '08:00', production: 28, scrap: 5 }, { time: '09:00', production: 40, scrap: 3 },
-      { time: '10:00', production: 45, scrap: 4 }, { time: '11:00', production: 38, scrap: 6 },
-      { time: '12:00', production: 42, scrap: 3 }, { time: '13:00', production: 50, scrap: 4 },
-      { time: '14:00', production: 44, scrap: 5 },
-    ],
-    downtime: [
-      { reason: 'Machine Breakdown', duration: 200, color: '#ef4444' },
-      { reason: 'Material Shortage', duration: 130, color: '#f97316' },
-      { reason: 'Maintenance', duration: 90, color: '#eab308' },
-    ],
-    shift: { target: 700, actual: 352, accepted: 311, rejected: 41 },
-  },
-  'Machine 4': {
-    kpi: { performance: 52.3, quality: 79.4, availability: 61.8, oee: 45.8 },
-    production: [
-      { time: '06:00', production: 20, scrap: 5 }, { time: '07:00', production: 15, scrap: 7 },
-      { time: '08:00', production: 0, scrap: 0 }, { time: '09:00', production: 22, scrap: 6 },
-      { time: '10:00', production: 18, scrap: 8 }, { time: '11:00', production: 0, scrap: 0 },
-      { time: '12:00', production: 25, scrap: 5 }, { time: '13:00', production: 30, scrap: 4 },
-      { time: '14:00', production: 12, scrap: 9 },
-    ],
-    downtime: [
-      { reason: 'Machine Breakdown', duration: 320, color: '#ef4444' },
-      { reason: 'Electrical Fault', duration: 180, color: '#f97316' },
-      { reason: 'Waiting Technician', duration: 95, color: '#eab308' },
-    ],
-    shift: { target: 600, actual: 142, accepted: 113, rejected: 29 },
-  },
-  'Machine 5': {
-    kpi: { performance: 96.3, quality: 97.8, availability: 93.5, oee: 91.4 },
-    production: [
-      { time: '06:00', production: 60, scrap: 1 }, { time: '07:00', production: 68, scrap: 1 },
-      { time: '08:00', production: 72, scrap: 2 }, { time: '09:00', production: 75, scrap: 1 },
-      { time: '10:00', production: 80, scrap: 2 }, { time: '11:00', production: 85, scrap: 1 },
-      { time: '12:00', production: 82, scrap: 1 }, { time: '13:00', production: 88, scrap: 2 },
-      { time: '14:00', production: 91, scrap: 1 },
-    ],
-    downtime: [
-      { reason: 'Planned Maintenance', duration: 60, color: '#ef4444' },
-      { reason: 'Tool Change', duration: 35, color: '#f97316' },
-      { reason: 'Quality Inspection', duration: 20, color: '#eab308' },
-    ],
-    shift: { target: 900, actual: 701, accepted: 687, rejected: 14 },
-  },
-};
 
 const kpiConfig = [
   { key: 'performance' as const, label: 'Performance', color: '#6366f1', trackColor: '#6366f120', icon: Zap },
@@ -244,7 +156,8 @@ function MachineDropdown({ selected, onSelect }: { selected: string; onSelect: (
 
 export function Dashboard() {
   const [selectedMachine, setSelectedMachine] = useState('Machine 1');
-  const { kpi, production: prodData, downtime, shift } = machineData[selectedMachine];
+  const { kpi, production: prodData, downtimeTop3: downtime, shift } = getMachineShiftData(selectedMachine);
+  const totalDowntime = downtime.reduce((a, d) => a + d.duration, 0);
 
   const remaining = shift.target - shift.actual;
   const actualPct = Math.round((shift.actual / shift.target) * 100);
@@ -318,7 +231,7 @@ export function Dashboard() {
                     <span className="inline-block w-2 h-2 rounded-full flex-shrink-0" style={{ background: item.color }} />
                     <span className="text-xs sm:text-sm text-[var(--text-primary)] truncate">{item.reason}</span>
                   </div>
-                  <span className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] ml-2 flex-shrink-0">{item.duration} min</span>
+                  <span className="text-xs sm:text-sm font-semibold text-[var(--text-primary)] ml-2 flex-shrink-0">{formatDowntimeDuration(item.duration)}</span>
                 </div>
                 <div className="h-2 bg-[var(--hover-bg)] rounded-full overflow-hidden">
                   <div className="h-full rounded-full" style={{ width: `${(item.duration / downtime[0].duration) * 100}%`, background: item.color }} />
@@ -328,7 +241,7 @@ export function Dashboard() {
           </div>
           <div className="mt-4 sm:mt-6 pt-4 border-t border-[var(--border-color)] flex items-center justify-between">
             <span className="text-xs sm:text-sm text-[var(--text-secondary)]">Total downtime</span>
-            <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">{downtime.reduce((a, d) => a + d.duration, 0)} min</span>
+            <span className="text-xs sm:text-sm font-bold text-[var(--text-primary)]">{formatDowntimeDuration(totalDowntime)}</span>
           </div>
         </Card>
       </div>
