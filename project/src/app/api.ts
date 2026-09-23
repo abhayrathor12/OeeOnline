@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-   "http://192.168.1.60:8257";
+   "https://https://oeebackend.pythonanywhere.com/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
