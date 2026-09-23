@@ -8,6 +8,9 @@ import { Shifts } from './pages/shifts';
 import { Configuration } from './pages/Configuration';
 import { Reports } from './pages/Reports';
 import { Targets } from './pages/target';
+import { Control } from './pages/Control';
+import { Investigations } from './pages/Investigations';
+import { Recipients } from './pages/Recipients';
 export const router = createBrowserRouter([
   {
     path: '/',
@@ -21,6 +24,11 @@ export const router = createBrowserRouter([
       { path: 'configuration', Component: Configuration },
       { path: 'reports', Component: Reports },
       { path: 'targets', Component: Targets },
+      // Deliberately not in the sidebar (navItems in Layout.tsx) --
+      // operator-only, reached by typing the URL directly.
+      { path: 'control', Component: Control },
+      { path: 'investigations', Component: Investigations },
+      { path: 'recipients', Component: Recipients },
     ],
   },
 ]);

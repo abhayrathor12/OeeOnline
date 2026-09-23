@@ -4,9 +4,13 @@ import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
 import { Button } from '../components/ui/button';
 import { STATIC_MACHINES } from '../data/staticData';
+import { useAgent } from '../agent/AgentContext';
 
 export function MachineList() {
-  const machines = STATIC_MACHINES;
+  const { isOeeMachineInError } = useAgent();
+  const machines = STATIC_MACHINES.map((m) =>
+    isOeeMachineInError(m.machine_id) ? { ...m, status: 'Error' } : m,
+  );
 
   return (
     <div className="space-y-6">

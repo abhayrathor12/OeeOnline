@@ -13,9 +13,13 @@ import {
   Sun,
   User,
   Target,
+  History,
+  Mail,
 } from 'lucide-react';
 import { useTheme } from '../context/ThemeContext';
 import { Switch } from './ui/switch';
+import { AgentDrawer } from './agent/AgentDrawer';
+import { AgentBubble } from './agent/AgentBubble';
 import logo from '../../assets/logo1.png';         // full logo  (e.g. 200×50px)
 import logoIcon from '../../assets/logo-.png';
 
@@ -27,6 +31,10 @@ const navItems = [
   { path: '/configuration', label: 'Configuration', icon: Settings },
   { path: '/reports', label: 'Reports', icon: FileText },
   { path: '/targets', label: 'Targets', icon: Target },
+  { path: '/investigations', label: 'Investigations', icon: History },
+  { path: '/recipients', label: 'Recipients', icon: Mail },
+  // '/control' is intentionally not listed here -- operator-only page,
+  // reached by typing the URL directly.
 ];
 
 export function Layout() {
@@ -42,6 +50,7 @@ export function Layout() {
   const getPageTitle = () => {
     const current = navItems.find(item => isActive(item.path));
     if (location.pathname.startsWith('/machines/')) return 'Machine Detail';
+    if (location.pathname === '/control') return 'Operator Control';
     return current?.label || 'Dashboard';
   };
 
@@ -133,6 +142,14 @@ export function Layout() {
           <Outlet />
         </main>
       </div>
+
+      {/* Global investigation drawer + reopen bubble -- persist across
+          every page in the app, INCLUDING /control. The operator who
+          triggers "Trigger Abnormality" from the control page needs to see
+          the pipeline run live (each step, then the final result) without
+          it flashing away, so the drawer renders here unconditionally. */}
+      <AgentDrawer />
+      <AgentBubble />
     </div>
   );
 }

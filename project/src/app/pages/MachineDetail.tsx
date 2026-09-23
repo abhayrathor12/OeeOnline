@@ -2,14 +2,22 @@ import React from 'react';
 import { useParams } from 'react-router';
 import { Card } from '../components/ui/card';
 import { Badge } from '../components/ui/badge';
+import { Button } from '../components/ui/button';
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Package, AlertTriangle, Activity } from 'lucide-react';
 import { STATIC_MACHINES, ACTIVE_SHIFT, getMachineShiftDataById } from '../data/staticData';
+import { useAgent } from '../agent/AgentContext';
+import { AGENT_BY_OEE_ID } from '../agent/machineConfig';
 
 export function MachineDetail() {
   const { id } = useParams();
-  const machine = STATIC_MACHINES.find(m => m.machine_id === Number(id)) ?? STATIC_MACHINES[0];
+  const staticMachine = STATIC_MACHINES.find(m => m.machine_id === Number(id)) ?? STATIC_MACHINES[0];
   const { kpi, production, downtimeBreakdown, shift } = getMachineShiftDataById(Number(id));
+  const { isOeeMachineInError, openDrawer } = useAgent();
+
+  const inError = isOeeMachineInError(staticMachine.machine_id);
+  const machine = inError ? { ...staticMachine, status: 'Error' } : staticMachine;
+  const agentMachine = AGENT_BY_OEE_ID[staticMachine.machine_id];
 
   const statusClass =
     machine.status === 'Running'
@@ -28,6 +36,11 @@ export function MachineDetail() {
             {machine.status}
           </Badge>
           <span className="text-xs text-[var(--text-secondary)]">{ACTIVE_SHIFT.label}</span>
+          {inError && agentMachine && (
+            <Button size="sm" variant="destructive" onClick={() => openDrawer(agentMachine.id)}>
+              View Investigation
+            </Button>
+          )}
         </div>
         <div className="flex gap-4">
           <Card className="px-6 py-4 bg-[var(--card-bg)] border-[var(--border-color)]">

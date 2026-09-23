@@ -3,7 +3,8 @@ import ReactApexChart from 'react-apexcharts';
 import { Card } from '../components/ui/card';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../components/ui/select';
 import { ChevronDown, ChevronRight } from 'lucide-react';
-import { MACHINE_NAMES } from '../data/staticData';
+import { MACHINE_NAMES, STATIC_MACHINES } from '../data/staticData';
+import { useAgent } from '../agent/AgentContext';
 
 // ── Helpers ───────────────────────────────────────────────────────────────────
 
@@ -109,6 +110,9 @@ const CHART_COLORS = ['#4f6ef7', '#f59e0b', '#ef4444', '#10b981', '#8b5cf6'];
 export function Downtime() {
   const [machine, setMachine] = useState(MACHINE_NAMES[0]);
   const [expandedRow, setExpandedRow] = useState<string | null>(null);
+  const { isOeeMachineInError } = useAgent();
+  const selectedMachineId = STATIC_MACHINES.find((m) => m.name === machine)?.machine_id;
+  const machineInError = selectedMachineId != null && isOeeMachineInError(selectedMachineId);
 
   const summary = summaryByMachine[machine];
   const data = downtimeByMachine[machine];
@@ -245,14 +249,22 @@ export function Downtime() {
       {/* ── Header ── */}
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h2 className="text-base sm:text-lg font-semibold text-[var(--primary-color)]">Downtime Analysis</h2>
-        <Select value={machine} onValueChange={setMachine}>
-          <SelectTrigger className="w-full sm:w-44 bg-[var(--bg-primary)] border-[var(--border-color)] text-[var(--text-primary)]">
-            <SelectValue />
-          </SelectTrigger>
-          <SelectContent>
-            {machines.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
-          </SelectContent>
-        </Select>
+        <div className="flex items-center gap-2">
+          {machineInError && (
+            <span className="inline-flex items-center gap-1.5 text-xs px-2.5 py-1 rounded-md bg-[var(--error-color)]/10 text-[var(--error-color)] border border-[var(--error-color)]/20">
+              <span className="w-1.5 h-1.5 rounded-full bg-[var(--error-color)] animate-pulse" />
+              Error — investigation in progress
+            </span>
+          )}
+          <Select value={machine} onValueChange={setMachine}>
+            <SelectTrigger className="w-full sm:w-44 bg-[var(--bg-primary)] border-[var(--border-color)] text-[var(--text-primary)]">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent>
+              {machines.map(m => <SelectItem key={m} value={m}>{m}</SelectItem>)}
+            </SelectContent>
+          </Select>
+        </div>
       </div>
 
       {/* ── Summary Cards ── */}

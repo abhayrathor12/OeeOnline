@@ -4,6 +4,7 @@ import { Card } from '../components/ui/card';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import { Badge } from '../components/ui/badge';
 import { STATIC_MACHINES, ACTIVE_SHIFT, getMachineShiftData, formatDowntimeDuration } from '../data/staticData';
+import { useAgent } from '../agent/AgentContext';
 
 // ─── Static Data ───────────────────────────────────────────────────────────────
 
@@ -112,7 +113,15 @@ function ShiftSummaryCard({ label, value, sub, color, icon: Icon, percent }: {
 
 // ─── Machine Dropdown ──────────────────────────────────────────────────────────
 
-function MachineDropdown({ selected, onSelect }: { selected: string; onSelect: (n: string) => void }) {
+function MachineDropdown({
+  selected,
+  onSelect,
+  machines,
+}: {
+  selected: string;
+  onSelect: (n: string) => void;
+  machines: { id: number; name: string; status: string; production: number; oee: number }[];
+}) {
   const [open, setOpen] = useState(false);
   const machine = machines.find(m => m.name === selected)!;
   const dot = (s: string) => s === 'Running' ? '#10b981' : s === 'Error' ? '#ef4444' : '#f59e0b';
@@ -158,6 +167,14 @@ export function Dashboard() {
   const [selectedMachine, setSelectedMachine] = useState('Machine 1');
   const { kpi, production: prodData, downtimeTop3: downtime, shift } = getMachineShiftData(selectedMachine);
   const totalDowntime = downtime.reduce((a, d) => a + d.duration, 0);
+  const { isOeeMachineInError } = useAgent();
+
+  // Overlay live agent status: if the AI investigation pipeline currently
+  // has this machine flagged (abnormal / investigating / open / approved),
+  // show it as 'Error' here regardless of the static demo status.
+  const machinesLive = machines.map((m) =>
+    isOeeMachineInError(m.id) ? { ...m, status: 'Error' } : m,
+  );
 
   const remaining = shift.target - shift.actual;
   const actualPct = Math.round((shift.actual / shift.target) * 100);
@@ -173,7 +190,7 @@ export function Dashboard() {
           <h2 className="text-base sm:text-lg font-semibold text-[var(--text-primary)]">Machine Dashboard</h2>
           <p className="text-xs text-[var(--text-secondary)] mt-0.5">Live production overview · {ACTIVE_SHIFT.label}</p>
         </div>
-        <MachineDropdown selected={selectedMachine} onSelect={setSelectedMachine} />
+        <MachineDropdown selected={selectedMachine} onSelect={setSelectedMachine} machines={machinesLive} />
       </div>
 
       {/* ── Row 1 : KPI Gauges ── */}
@@ -280,7 +297,7 @@ export function Dashboard() {
               </tr>
             </thead>
             <tbody>
-              {machines.map(machine => (
+              {machinesLive.map(machine => (
                 <tr
                   key={machine.id}
                   onClick={() => setSelectedMachine(machine.name)}
