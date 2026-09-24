@@ -11,7 +11,7 @@ const AGENT_API_BASE_URL = 'https://oeerepo-production.up.railway.app/';
 // any device -- gets investigation events pushed to it live instead of
 // finding out via polling.
 // export const AGENT_WS_URL = AGENT_API_BASE_URL.replace(/^http/i, 'ws') + '/ws/agent';
-// export const AGENT_WS_URL =
+export const AGENT_WS_URL =
 AGENT_API_BASE_URL.replace(/^https/i, 'wss').replace(/\/$/, '') + '/ws/agent';
 
 const agentApiClient = axios.create({
