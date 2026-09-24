@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const API_BASE_URL =
-   "https://oeebackend.pythonanywhere.com/";
+   "https://oeerepo-production.up.railway.app/";
 
 const api = axios.create({
   baseURL: API_BASE_URL,
