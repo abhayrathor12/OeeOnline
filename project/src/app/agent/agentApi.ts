@@ -3,7 +3,7 @@
 // are two different servers.
 import axios from 'axios';
 
-const AGENT_API_BASE_URL = 'https://oeerepo-production.up.railway.app/';
+const AGENT_API_BASE_URL = 'https://oeeBackend.pythonanywhere.com/';
 // const AGENT_API_BASE_URL = 'http://localhost:8000';
 
 // Same host/port as the REST API, just over ws(s):// instead of http(s)://.
